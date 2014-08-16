@@ -1,0 +1,8 @@
+.idea/
+meta/*.json
+log/
+.DS_Store
+*.pyc
+~*
+csft_admin_config.json
+*.sqlite
