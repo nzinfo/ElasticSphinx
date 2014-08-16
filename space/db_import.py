@@ -21,7 +21,7 @@ class DBTableMeta(object):
         self._index = []
         self._unique = []
 
-    def type_convert(self, c, dialect = False):
+    def type_convert(self, c, dialect=False):
         """
             将用类表示的数据字段类型，转为 字符串表示，
             目前不支持 方言。 如果支持，只支持 MySQL | PostgreSQL
@@ -130,9 +130,12 @@ class DBTableMeta(object):
                 column_meta = {
                     "name": c['name'],
                     "nullable": c['nullable'],
-                    "default": c['default'],
+                    #"default": c['default'],
                     #"autoinc": c['autoincrement'],
                 }
+
+                if 'default' in c and c['default']:
+                    column_meta['default'] = c['default']
 
                 if 'autoincrement' in c:
                     column_meta['autoinc'] = c['autoincrement']
@@ -140,7 +143,7 @@ class DBTableMeta(object):
                 c_expr = c['type'].column_expression
                 c_type = self.type_convert(c_expr.im_class)
                 column_meta['type'] = c_type
-                if c_type in ['CHAR', 'NCHAR']:
+                if c_type in ['CHAR', 'NCHAR', 'NVARCHAR', 'VARBINARY', 'VARCHAR']:
                     column_meta['length'] = c['type'].length
                 meta['columns'].append(column_meta)
                 #FIXME: 暂时不处理限制 INTEGER 字节数的情况。
@@ -157,6 +160,7 @@ class DBTableMeta(object):
         # 处理唯一索引
         # 处理外键
         return meta
+
 
 class DBInspector(object):
     """
