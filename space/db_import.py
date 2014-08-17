@@ -112,6 +112,13 @@ class DBTableMeta(object):
         if issubclass(c, sqlalchemy.types.VARCHAR):
             return "VARCHAR"
 
+        if dialect:
+            if issubclass(c, sqlalchemy.dialects.mysql.TINYINT):
+                return "TINYINT"
+
+            if issubclass(c, sqlalchemy.dialects.mysql.TINYTEXT):
+                return "TEXT"
+
         return None
 
     def to_jsonable(self):
@@ -141,7 +148,7 @@ class DBTableMeta(object):
                     column_meta['autoinc'] = c['autoincrement']
 
                 c_expr = c['type'].column_expression
-                c_type = self.type_convert(c_expr.im_class)
+                c_type = self.type_convert(c_expr.im_class, True)
                 column_meta['type'] = c_type
                 if c_type in ['CHAR', 'NCHAR', 'NVARCHAR', 'VARBINARY', 'VARCHAR']:
                     column_meta['length'] = c['type'].length

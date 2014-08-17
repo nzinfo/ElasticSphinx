@@ -97,18 +97,59 @@ class DatabaseGenerate(Command):
         app = flask.current_app
         for db in db_names:
             conn_str = app.config['DATABASE_%s_URL' % db.upper()]
+
             meta_path = app.config['%s_META_PATH' % db.upper()]
             meta_path = os.path.abspath(meta_path)
+
+            app_path = app.config['%s_APP_PATH' % db.upper()]
+            app_path = os.path.abspath(app_path)
+            sqlalchemy_file = os.path.join(app_path, 'schema', 'sql_schema.py')
             app.db_engine = space.cs_create_engine(app, conn_str)
             gen = space.DBSchemaCodeGen(app.db_engine)
             if conn_str.find('mysql') == 0:
                 code = gen.generate(meta_path, 'mysql', 'sqlalchemy')
+                with open(sqlalchemy_file, 'wb') as fh:
+                    fh.write(code)
+                code = gen.generate(meta_path, 'mysql', 'pony')
             else:
                 code = gen.generate(meta_path, 'postgresql', 'sqlalchemy')
             # write to file
-            print code
+            #print code
             pass
 
+
+class DatabaseRebuild(Command):
+    """
+        Rebuild table & index
+    """
+    option_list = (
+        Option("-d", "--debug", dest='debug_flag', action="count", required=False, default=0,
+               help='debug flag'),
+        Option(metavar='schema', dest='db_schema', help='which schema create table in.'),
+        Option(metavar='name', dest='db_names', help='generate python code for which database(s)', nargs='+'),
+    )
+
+    def run(self, debug_flag, db_schema, db_names):
+        app = flask.current_app
+        for db in db_names:
+            conn_str = app.config['DATABASE_%s_DEV_URL' % db.upper()]
+            schema_cls_name = app.config['DATABASE_%s_SCHEMA_DEFINE' % db.upper()]
+            #print schema_cls_name
+            meta_path = app.config['%s_META_PATH' % db.upper()]
+            meta_path = os.path.abspath(meta_path)
+            app.db_engine = space.cs_create_engine(app, conn_str)
+            # set schema.
+            obj = space.load_class(schema_cls_name)
+            if obj is None:
+                print 'can not found %s.' % schema_cls_name
+                return
+
+            obj = obj()         # create the schema object.
+            for tbl in obj._tables:
+                #obj._tables[tbl].schema = db_schema
+                obj._tables[tbl].drop(app.db_engine, checkfirst=True)
+                obj._tables[tbl].create(app.db_engine, checkfirst=True)
+            pass
 
 class DatabaseXMLCodeDebug(Command):
     def run(self):
@@ -133,7 +174,7 @@ class DatabaseXMLCodeDebug(Command):
 def setup_manager(app):
     mgr = Manager(app)
     mgr.add_command('import', DatabaseImport())
-    #mgr.add_command("test", DatabaseXMLCodeDebug())
+    mgr.add_command("rebuild", DatabaseRebuild())
     mgr.add_command("generate", DatabaseGenerate())
     #manager.add_command("dict", dict_cli.getManager(app))
     return mgr

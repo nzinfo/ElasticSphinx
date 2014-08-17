@@ -1,5 +1,6 @@
 .idea/
 meta/*.json
+demoapp/schema/*.py
 log/
 .DS_Store
 *.pyc
