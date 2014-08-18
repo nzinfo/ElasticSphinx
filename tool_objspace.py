@@ -151,31 +151,47 @@ class DatabaseRebuild(Command):
                 obj._tables[tbl].create(app.db_engine, checkfirst=True)
             pass
 
-class DatabaseXMLCodeDebug(Command):
-    def run(self):
-        #FIXME: minidom is not secure, Good to go
-        from xml.dom.minidom import parse, parseString
-        global G_DEBUG_XML
-        dom = parseString(G_DEBUG_XML)
-        for table in dom.getElementsByTagName("table"):
-            print table.attributes['name'].value
-            for row in table.getElementsByTagName("row"):
-                print row, row.attributes["name"]
-                """
-                <datatype>VARCHAR(80)</datatype>
-        <default>'abc'</default><comment>ccfsakl;dfjldsa</comment>
-             <default>NULL</default><relation origin_row= "" table="typename" row="id, lang" />
 
-              """
-            print table
-        pass
+class DatabaseSync(Command):
+    """
+        Sync Data from SQLDatabase -> ObjStore(LedisDB)
+    """
+    option_list = (
+        Option("-d", "--debug", dest='debug_flag', action="count", required=False, default=0,
+               help='debug flag'),
+        Option(metavar='schema', dest='db_schema', help='which schema create table in.'),
+        Option(metavar='name', dest='db_names', help='generate python code for which database(s)', nargs='+'),
+    )
 
+    def run(self, debug_flag, db_schema, db_names):
+        app = flask.current_app
+        for db in db_names:
+            conn_str = app.config['DATABASE_%s_DEV_URL' % db.upper()]
+            schema_cls_name = app.config['DATABASE_%s_SCHEMA_DEFINE' % db.upper()]
+            #print schema_cls_name
+            meta_path = app.config['%s_META_PATH' % db.upper()]
+            meta_path = os.path.abspath(meta_path)
+            app.db_engine = space.cs_create_engine(app, conn_str)
+            app.db_engine = space.cs_create_engine(app, conn_str)
+            # set schema.
+            obj = space.load_class(schema_cls_name)
+            if obj is None:
+                print 'can not found %s.' % schema_cls_name
+                return
+
+            db_syncer = space.DBSync(app.db_engine)
+
+            obj = obj()         # create the schema object.
+            for tbl in obj._tables:
+                db_syncer.sync_table(tbl, obj._tables[tbl])
+                #print tbl
 
 def setup_manager(app):
     mgr = Manager(app)
     mgr.add_command('import', DatabaseImport())
     mgr.add_command("rebuild", DatabaseRebuild())
     mgr.add_command("generate", DatabaseGenerate())
+    mgr.add_command("sync", DatabaseSync())
     #manager.add_command("dict", dict_cli.getManager(app))
     return mgr
 

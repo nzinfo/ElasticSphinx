@@ -2,3 +2,4 @@
 
 [注意事项]
 1 由于 PonyORM 提供的字段类型不全，创建库表结构依然依赖 SQLAlchemy。
+2 引入 pymongo 是为了使用其JSON解析器

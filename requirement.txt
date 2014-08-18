@@ -2,5 +2,9 @@ sqlalchemy
 MySQL-python
 prettytable
 Flask>=0.9
+flask_jsontools
 Flask-Script>=0.5.1
 pika>=0.9.8
+singledispatch
+six
+webob
