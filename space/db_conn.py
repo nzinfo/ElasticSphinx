@@ -45,7 +45,7 @@ class SqlServerCreator:
 # end of SqlServerCreator
 
 
-def cs_create_engine(app, conn_str):
+def cs_create_engine(app, conn_str, echo=False):
     """
         create engine by db_type,
             db_type in ['mssql', 'mysql']
@@ -61,7 +61,7 @@ def cs_create_engine(app, conn_str):
         return app.db_engine
 
     #engine = create_engine('%s://' % db_type, creator=creators[db_type](conf)  )
-    engine = create_engine(conn_str)
+    engine = create_engine(conn_str, echo=echo, convert_unicode=True)
     engine.uri = conn_str;
     app.db_engine = engine
 

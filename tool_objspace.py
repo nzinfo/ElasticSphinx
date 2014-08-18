@@ -171,8 +171,7 @@ class DatabaseSync(Command):
             #print schema_cls_name
             meta_path = app.config['%s_META_PATH' % db.upper()]
             meta_path = os.path.abspath(meta_path)
-            app.db_engine = space.cs_create_engine(app, conn_str)
-            app.db_engine = space.cs_create_engine(app, conn_str)
+            app.db_engine = space.cs_create_engine(app, conn_str, True)
             # set schema.
             obj = space.load_class(schema_cls_name)
             if obj is None:
