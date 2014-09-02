@@ -44,6 +44,12 @@ except ImportError:  # pragma no cover
 def is_saobject(obj):
     return hasattr(obj, '_sa_class_manager')
 
+def convert_keys_to_string(dictionary):
+    """Recursively converts dictionary keys to strings."""
+    if not isinstance(dictionary, dict):
+        return dictionary
+    return dict((str(k), convert_keys_to_string(v))
+                for k, v in dictionary.items())
 
 class GenericJSON(JSONEncoder):
     '''
@@ -105,7 +111,8 @@ class GenericJSON(JSONEncoder):
                 props['count'] = len(props['rows'])
             return props
         elif isinstance(obj, RowProxy):
-            return dict(obj)
+            d = dict(obj)
+            return convert_keys_to_string(d)
         elif isinstance(obj, webob_dicts):
             return obj.mixed()
         else:

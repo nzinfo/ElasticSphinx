@@ -23,14 +23,14 @@ class DBSync(object):
 
         if tbl_name != 'Auction':
             return
-        #print tbl_def, type(tbl_def)
+
         pk_names = [key.name for key in tbl_def.primary_key]
         pk_cols = [tbl_def.c[key.name] for key in tbl_def.primary_key]
-        #print pk_cols
-        print tbl_name, pk_names
+        #print tbl_name, pk_names
         if len(pk_names) == 0:
             #print ("Plz assign primary key in %s." % tbl_name)
             return
+
         """
             SELECT * FROM `content` AS t1
     JOIN (SELECT id FROM `content` ORDER BY id desc LIMIT ".($page-1)*$pagesize.", 1) AS t2
@@ -74,12 +74,15 @@ class DBSync(object):
                 rs = conn.execute(stmt)
                 for row in rs:
                     #print jsonify(row)
+                    if row['ArtCode'] == 'art0000014880':
+                        #print row, row['Click']
+                        print jsonify(row)
                     #print row['WorkName'], type(row['WorkName'])
-                    cnt_items[build_uri(pk_names, row)] = 1
+                    #cnt_items[build_uri(pk_names, row)] = 1
         finally:
             conn.close()
 
-        if True:
+        if False:       # keep the code for [range select vs total select] data verify
             conn = self._engine.connect()
             try:
                 stmt = select([tbl_def])
