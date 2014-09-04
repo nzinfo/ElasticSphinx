@@ -1,32 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    [del]
     用于处理 ObjSpace 的命令行接口
-    1 import <连接名>
-        将某数据库中对表的定义，导入系统。 可能会丢失信息，尽最大可能导入；
-        保存为 JSON 格式
-
-    2 generate <连接名>
-        根据 JSON 的定义，生成有效的 PonyORM 的表结构定义
-        根据 JSON 的定义，生成有效的 SQLAlchemy 的表结构定义
-        - 是否支持 不同的表 生成 不同的文件？
-        (基本假设：从遗留的系统启动，开始系统开发的流程)
-
-    3 rebuild
-        （PonyORM | SQLAlchemy 的均支持）
-        根据数据库的定义(Python)， 更新 表的文件定义 (删除、重建)
-
-    4 init
-        根据预制 SQL 初始化数据
-
-    5 sync
-        同步数据库的数据到 `Redis` 中，实际为自己改写的；
-
-    6 tigger
-
-        在数据库中，创建同步数据需要的触发器 和 其他辅助结构
-    [/del]
-
 """
 
 import json
@@ -319,6 +293,7 @@ def setup_manager(app):
     mgr.add_command("ctrl", DatabaseControl())
     mgr.add_command("sync", DatabaseSync())
     mgr.add_command("index", DatabaseIndex())
+    # TODO: runserver 有 两个模式  @meta @worker
     return mgr
 
 if __name__ == "__main__":
