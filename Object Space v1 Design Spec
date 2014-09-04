@@ -159,6 +159,11 @@ Object Space v1 设计 Spec
 	- 可以强制取代？ 
 	* 目前， 同步的过程必须固定在某台机器上， 不能在集群中随便转
 
+提供多个后端存储的版本
+1 MySQL
+    id, type, bson
+2 MongoDB
+3 Redis
 
 FIXME
 ==============
